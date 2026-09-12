@@ -4,7 +4,13 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 2 * * *'  # 每天凌晨2点(UTC)自动跑，即北京时间早10点
+    - cron: '0 2 * * *'
+
+# 必须添加权限，否则部署 Pages 会失败
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   test:
@@ -28,9 +34,38 @@ jobs:
         run: |
           pytest -v --alluredir=./reports/allure-results
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
+      # 新增步骤：安装 Allure 命令行工具
+      - name: Install Allure
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre
+          wget https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
+          tar -zxvf allure-2.27.0.tgz
+          sudo mv allure-2.27.0 /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+
+      # 新增步骤：生成 HTML 报告
+      - name: Generate Allure Report
         if: always()
+        run: |
+          allure generate ./reports/allure-results -o ./reports/allure-report --clean
+
+      # 新增步骤：上传 HTML 报告作为 Pages 部署产物
+      - name: Upload Pages Artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: allure-results
-          path: reports/allure-results
+          path: ./reports/allure-report
+
+  # 新增的 CD Job：部署到 GitHub Pages
+  deploy:
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
