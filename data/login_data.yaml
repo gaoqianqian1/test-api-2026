@@ -1,0 +1,13 @@
+login_case:
+  - case_name: "正常登录"
+    username: "admin"
+    password: "123456"
+    expected_code: 0
+  - case_name: "密码错误"
+    username: "admin"
+    password: "wrong"
+    expected_code: 401
+  - case_name: "用户名为空"
+    username: ""
+    password: "123456"
+    expected_code: 400

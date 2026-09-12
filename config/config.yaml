@@ -1,0 +1,11 @@
+active_env: "test"
+env:
+  dev:
+    base_url: "https://dev-api.example.com"
+    timeout: 10
+  test:
+    base_url: "https://httpbin.org"
+    timeout: 10
+  prod:
+    base_url: "https://prod-api.example.com"
+    timeout: 15
