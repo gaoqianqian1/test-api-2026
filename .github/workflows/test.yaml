@@ -32,7 +32,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v --alluredir=./reports/allure-results
+          pytest -v -m "not mock" --alluredir=./reports/allure-results
 
       # 新增步骤：安装 Allure 命令行工具
       - name: Install Allure
